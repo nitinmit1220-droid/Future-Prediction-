@@ -1,0 +1,741 @@
+/* ==================================
+   1. BASIC SETTINGS
+================================== */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --bg-color: #f4f6fb;
+    --card-color: #ffffff;
+    --text-color: #1e293b;
+    --muted-color: #64748b;
+    --primary-color: #4f46e5;
+    --border-color: #e2e8f0;
+    --sidebar-color: #ffffff;
+    --input-color: #ffffff;
+    --shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: var(--bg-color);
+    color: var(--text-color);
+    transition: background 0.3s, color 0.3s;
+}
+
+.hidden {
+    display: none !important;
+}
+
+
+/* ==================================
+   2. AUTHENTICATION
+================================== */
+
+.auth-section {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    background: linear-gradient(135deg, #eef2ff, #f8fafc);
+}
+
+.auth-card {
+    width: 100%;
+    max-width: 430px;
+    padding: 35px;
+    background: white;
+    border-radius: 18px;
+    box-shadow: 0 15px 50px rgba(0, 0, 0, 0.09);
+}
+
+.auth-logo {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 15px;
+}
+
+.auth-logo span {
+    width: 58px;
+    height: 58px;
+    background: var(--primary-color);
+    color: white;
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    font-weight: bold;
+}
+
+.auth-card > h1 {
+    text-align: center;
+    font-size: 26px;
+}
+
+.auth-subtitle {
+    text-align: center;
+    color: #64748b;
+    font-size: 13px;
+    margin: 8px 0 30px;
+}
+
+.auth-form h2 {
+    font-size: 21px;
+    margin-bottom: 8px;
+}
+
+.auth-form > p {
+    color: #64748b;
+    margin-bottom: 23px;
+    font-size: 14px;
+}
+
+
+/* ==================================
+   3. INPUTS AND BUTTONS
+================================== */
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+input,
+select {
+    width: 100%;
+    padding: 13px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--input-color);
+    color: var(--text-color);
+    outline: none;
+    font-size: 14px;
+}
+
+input:focus,
+select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.10);
+}
+
+.primary-btn {
+    padding: 13px 20px;
+    border: none;
+    border-radius: 8px;
+    background: var(--primary-color);
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.primary-btn:hover {
+    background: #3730a3;
+}
+
+.primary-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.full-btn {
+    width: 100%;
+}
+
+.secondary-btn {
+    padding: 10px 16px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--card-color);
+    color: var(--text-color);
+    cursor: pointer;
+}
+
+.message {
+    margin-top: 15px;
+    font-size: 14px;
+    color: #dc2626;
+}
+
+.message.success {
+    color: #16a34a;
+}
+
+
+/* ==================================
+   4. APPLICATION LAYOUT
+================================== */
+
+.app-container {
+    min-height: 100vh;
+    display: flex;
+}
+
+.sidebar {
+    width: 250px;
+    min-height: 100vh;
+    background: var(--sidebar-color);
+    border-right: 1px solid var(--border-color);
+    padding: 25px 15px;
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 5px 10px 30px;
+}
+
+.brand-icon {
+    width: 42px;
+    height: 42px;
+    background: var(--primary-color);
+    color: white;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
+
+.brand h2 {
+    font-size: 18px;
+}
+
+.brand span {
+    font-size: 12px;
+    color: var(--muted-color);
+}
+
+.navigation {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.nav-link {
+    text-decoration: none;
+    color: var(--muted-color);
+    padding: 13px;
+    border-radius: 8px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    font-size: 14px;
+}
+
+.nav-link span {
+    font-size: 19px;
+}
+
+.nav-link:hover,
+.nav-link.active {
+    background: #eef2ff;
+    color: var(--primary-color);
+    font-weight: bold;
+}
+
+.sidebar-bottom {
+    margin-top: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-top: 30px;
+}
+
+.theme-btn,
+.logout-btn {
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    text-align: left;
+    cursor: pointer;
+    background: transparent;
+    color: var(--text-color);
+}
+
+.theme-btn:hover {
+    background: var(--bg-color);
+}
+
+.logout-btn {
+    color: #dc2626;
+}
+
+.logout-btn:hover {
+    background: #fef2f2;
+}
+
+.main-content {
+    flex: 1;
+    padding: 30px;
+    min-width: 0;
+}
+
+
+/* ==================================
+   5. HEADER
+================================== */
+
+.top-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    gap: 20px;
+}
+
+.top-header h1 {
+    font-size: 25px;
+    margin-bottom: 6px;
+}
+
+.top-header p {
+    color: var(--muted-color);
+    font-size: 13px;
+}
+
+.admin-profile {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.profile-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: var(--primary-color);
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+}
+
+.admin-profile strong {
+    display: block;
+    font-size: 14px;
+}
+
+.admin-profile span {
+    font-size: 12px;
+    color: var(--muted-color);
+}
+
+
+/* ==================================
+   6. PAGE NAVIGATION
+================================== */
+
+.page {
+    display: none;
+}
+
+.page.active {
+    display: block;
+}
+
+
+/* ==================================
+   7. WELCOME CARD
+================================== */
+
+.welcome-card {
+    background: linear-gradient(120deg, #4f46e5, #7c3aed);
+    color: white;
+    border-radius: 15px;
+    padding: 28px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+.welcome-card h2 {
+    margin-bottom: 10px;
+}
+
+.welcome-card p {
+    font-size: 14px;
+    opacity: 0.9;
+}
+
+.welcome-icon {
+    font-size: 50px;
+}
+
+
+/* ==================================
+   8. STATISTICS CARDS
+================================== */
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
+    margin-bottom: 25px;
+}
+
+.stat-card {
+    padding: 22px;
+    border-radius: 12px;
+    background: var(--card-color);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow);
+}
+
+.stat-card p {
+    font-size: 13px;
+    color: var(--muted-color);
+    margin-bottom: 13px;
+}
+
+.stat-card h2 {
+    font-size: 27px;
+}
+
+.stat-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 9px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.purple {
+    background: #ede9fe;
+    color: #6d28d9;
+}
+
+.green {
+    background: #dcfce7;
+    color: #15803d;
+}
+
+.orange {
+    background: #ffedd5;
+    color: #c2410c;
+}
+
+.red {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+
+/* ==================================
+   9. CONTENT CARDS
+================================== */
+
+.content-card {
+    padding: 25px;
+    background: var(--card-color);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    margin-bottom: 25px;
+}
+
+.card-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.card-heading h2 {
+    font-size: 19px;
+    margin-bottom: 5px;
+}
+
+.card-heading span {
+    font-size: 13px;
+    color: var(--muted-color);
+}
+
+
+/* ==================================
+   10. CHART
+================================== */
+
+.chart-container {
+    height: 320px;
+    max-width: 450px;
+    margin: auto;
+}
+
+
+/* ==================================
+   11. STUDENT FORM
+================================== */
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0 20px;
+}
+
+#studentForm .primary-btn {
+    margin-top: 5px;
+}
+
+
+/* ==================================
+   12. TABLES
+================================== */
+
+.table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 650px;
+}
+
+th,
+td {
+    padding: 15px 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 13px;
+}
+
+th {
+    background: var(--bg-color);
+    color: var(--muted-color);
+    font-weight: 600;
+}
+
+td {
+    color: var(--text-color);
+}
+
+.delete-btn {
+    background: #fee2e2;
+    color: #dc2626;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.delete-btn:hover {
+    background: #fecaca;
+}
+
+.performance-badge {
+    display: inline-block;
+    padding: 6px 9px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: bold;
+}
+
+.performance-good {
+    background: #dcfce7;
+    color: #15803d;
+}
+
+.performance-average {
+    background: #ffedd5;
+    color: #c2410c;
+}
+
+.performance-weak {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+.table-title {
+    margin: 30px 0 15px;
+}
+
+
+/* ==================================
+   13. AI FEEDBACK
+================================== */
+
+.feedback-result {
+    margin-top: 25px;
+    padding: 20px;
+    background: var(--bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    line-height: 1.8;
+    white-space: pre-wrap;
+}
+
+.feedback-result p {
+    color: var(--muted-color);
+}
+
+
+/* ==================================
+   14. DARK MODE
+================================== */
+
+body.dark {
+    --bg-color: #0f172a;
+    --card-color: #1e293b;
+    --text-color: #f1f5f9;
+    --muted-color: #94a3b8;
+    --border-color: #334155;
+    --sidebar-color: #1e293b;
+    --input-color: #0f172a;
+    --shadow: none;
+}
+
+body.dark .nav-link:hover,
+body.dark .nav-link.active {
+    background: #312e81;
+    color: #c7d2fe;
+}
+
+body.dark th {
+    background: #0f172a;
+}
+
+body.dark .auth-section {
+    background: #0f172a;
+}
+
+
+/* ==================================
+   15. RESPONSIVE DESIGN
+================================== */
+
+@media (max-width: 1000px) {
+
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .sidebar {
+        width: 210px;
+    }
+}
+
+@media (max-width: 700px) {
+
+    .app-container {
+        flex-direction: column;
+    }
+
+    .sidebar {
+        width: 100%;
+        min-height: auto;
+        padding: 15px;
+    }
+
+    .brand {
+        padding-bottom: 15px;
+    }
+
+    .navigation {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .sidebar-bottom {
+        flex-direction: row;
+        padding-top: 15px;
+    }
+
+    .main-content {
+        padding: 18px;
+    }
+
+    .top-header {
+        align-items: flex-start;
+    }
+
+    .top-header h1 {
+        font-size: 20px;
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .stats-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+
+    .stat-card {
+        padding: 15px;
+    }
+
+    .welcome-card {
+        padding: 20px;
+    }
+
+    .welcome-icon {
+        display: none;
+    }
+}
+
+@media (max-width: 420px) {
+
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .auth-card {
+        padding: 25px 20px;
+    }
+
+    .admin-profile {
+        display: none;
+    }
+}
+
+
+/* LOGIN AND REGISTER SWITCH */
+
+.auth-switch {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 14px;
+    color: var(--muted-color);
+}
+
+.auth-switch a {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 600;
+    margin-left: 4px;
+}
+
+.auth-switch a:hover {
+    text-decoration: underline;
+}
+
+/* HIDE ELEMENTS */
+
+.hidden {
+    display: none !important;
+}

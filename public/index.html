@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>EduPredict AI - Admin Panel</title>
+
+    <link rel="stylesheet" href="style.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+
+   
+<!-- ==================================
+     AUTHENTICATION SECTION
+=================================== -->
+
+<section id="authSection" class="auth-section">
+
+    <div class="auth-card">
+
+        <div class="auth-logo">
+            <span>EP</span>
+        </div>
+
+        <h1>EduPredict AI</h1>
+
+        <p class="auth-subtitle">
+            Student Performance Prediction System
+        </p>
+
+        <!-- REGISTER FORM -->
+
+        <form id="registerForm" class="auth-form hidden">
+
+            <h2>Create Admin Account</h2>
+
+            <p>Register your administrator account.</p>
+
+            <div class="form-group">
+                <label for="registerName">Admin Name</label>
+
+                <input
+                    type="text"
+                    id="registerName"
+                    placeholder="Enter your name"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="registerEmail">Email Address</label>
+
+                <input
+                    type="email"
+                    id="registerEmail"
+                    placeholder="Enter your email"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="registerPassword">Password</label>
+
+                <input
+                    type="password"
+                    id="registerPassword"
+                    placeholder="Minimum 8 characters"
+                    minlength="8"
+                    required
+                >
+            </div>
+
+            <button type="submit" class="primary-btn full-btn">
+                Create Admin Account
+            </button>
+
+            <!-- BACK TO LOGIN LINK -->
+
+            <p class="auth-switch">
+                Already have an account?
+                <a href="#" id="showLogin">Login Here</a>
+            </p>
+
+        </form>
+
+
+        <!-- LOGIN FORM -->
+
+        <form id="loginForm" class="auth-form hidden">
+
+            <h2>Admin Login</h2>
+
+            <p>Login to access your dashboard.</p>
+
+            <div class="form-group">
+                <label for="loginEmail">Email Address</label>
+
+                <input
+                    type="email"
+                    id="loginEmail"
+                    placeholder="Enter your email"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="loginPassword">Password</label>
+
+                <input
+                    type="password"
+                    id="loginPassword"
+                    placeholder="Enter your password"
+                    required
+                >
+            </div>
+
+            <button type="submit" class="primary-btn full-btn">
+                Login
+            </button>
+
+            <!-- REGISTER LINK -->
+
+            <p class="auth-switch">
+                Don't have an admin account?
+                <a href="#" id="showRegister">Register Here</a>
+            </p>
+
+        </form>
+
+        <p id="authMessage" class="message"></p>
+
+    </div>
+
+</section>
+
+
+    <!-- ==================================
+         MAIN APPLICATION
+    =================================== -->
+
+    <div id="appSection" class="app-container hidden">
+
+
+        <!-- SIDEBAR -->
+
+        <aside class="sidebar">
+
+            <div class="brand">
+                <div class="brand-icon">EP</div>
+
+                <div>
+                    <h2>EduPredict</h2>
+                    <span>AI Dashboard</span>
+                </div>
+            </div>
+
+
+            <nav class="navigation">
+
+                <a href="#" class="nav-link active" data-page="dashboard">
+                    <span>▦</span>
+                    Dashboard
+                </a>
+
+                <a href="#" class="nav-link" data-page="add-student">
+                    <span>＋</span>
+                    Add Student
+                </a>
+
+                <a href="#" class="nav-link" data-page="students">
+                    <span>♧</span>
+                    Students
+                </a>
+
+                <a href="#" class="nav-link" data-page="prediction">
+                    <span>◈</span>
+                    AI Prediction
+                </a>
+
+                <a href="#" class="nav-link" data-page="admin">
+                    <span>⚙</span>
+                    Admin Panel
+                </a>
+
+            </nav>
+
+
+            <div class="sidebar-bottom">
+
+                <button id="themeToggle" class="theme-btn">
+                    🌙 Change Theme
+                </button>
+
+                <button id="logoutBtn" class="logout-btn">
+                    ↪ Logout
+                </button>
+
+            </div>
+
+        </aside>
+
+
+        <!-- MAIN CONTENT -->
+
+        <main class="main-content">
+
+
+            <!-- TOP HEADER -->
+
+            <header class="top-header">
+
+                <div>
+                    <h1 id="pageTitle">Dashboard</h1>
+
+                    <p>Welcome to EduPredict AI</p>
+                </div>
+
+                <div class="admin-profile">
+
+                    <div class="profile-icon">A</div>
+
+                    <div>
+                        <strong id="adminName">Admin</strong>
+                        <span id="adminEmail">Administrator</span>
+                    </div>
+
+                </div>
+
+            </header>
+
+
+            <!-- ==================================
+                 DASHBOARD PAGE
+            =================================== -->
+
+            <section id="dashboard" class="page active">
+
+                <div class="welcome-card">
+
+                    <div>
+                        <h2>Student Performance Overview</h2>
+
+                        <p>
+                            Monitor student performance and academic progress.
+                        </p>
+                    </div>
+
+                    <div class="welcome-icon">🎓</div>
+
+                </div>
+
+
+                <!-- STATISTICS -->
+
+                <div class="stats-grid">
+
+                    <div class="stat-card">
+                        <div class="stat-icon purple">👥</div>
+
+                        <p>Total Students</p>
+
+                        <h2 id="totalStudents">0</h2>
+                    </div>
+
+
+                    <div class="stat-card">
+                        <div class="stat-icon green">✓</div>
+
+                        <p>Good Students</p>
+
+                        <h2 id="goodStudents">0</h2>
+                    </div>
+
+
+                    <div class="stat-card">
+                        <div class="stat-icon orange">◷</div>
+
+                        <p>Average Students</p>
+
+                        <h2 id="averageStudents">0</h2>
+                    </div>
+
+
+                    <div class="stat-card">
+                        <div class="stat-icon red">!</div>
+
+                        <p>Needs Improvement</p>
+
+                        <h2 id="weakStudents">0</h2>
+                    </div>
+
+                </div>
+
+
+                <!-- CHART -->
+
+                <div class="content-card chart-card">
+
+                    <div class="card-heading">
+                        <h2>Performance Distribution</h2>
+
+                        <span>Student Overview</span>
+                    </div>
+
+                    <div class="chart-container">
+                        <canvas id="performanceChart"></canvas>
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- ==================================
+                 ADD STUDENT PAGE
+            =================================== -->
+
+            <section id="add-student" class="page">
+
+                <div class="content-card">
+
+                    <div class="card-heading">
+                        <h2>Add New Student</h2>
+
+                        <span>Enter student academic details</span>
+                    </div>
+
+
+                    <form id="studentForm">
+
+                        <div class="form-grid">
+
+                            <div class="form-group">
+                                <label>Student Name</label>
+
+                                <input
+                                    type="text"
+                                    name="name"
+                                    placeholder="Enter student name"
+                                    required
+                                >
+                            </div>
+
+
+                            <div class="form-group">
+                                <label>Roll Number</label>
+
+                                <input
+                                    type="text"
+                                    name="roll_number"
+                                    placeholder="Enter roll number"
+                                    required
+                                >
+                            </div>
+
+
+                            <div class="form-group">
+                                <label>Attendance (%)</label>
+
+                                <input
+                                    type="number"
+                                    name="attendance"
+                                    min="0"
+                                    max="100"
+                                    step="any"
+                                    placeholder="0 - 100"
+                                    required
+                                >
+                            </div>
+
+
+                            <div class="form-group">
+                                <label>Previous Marks (%)</label>
+
+                                <input
+                                    type="number"
+                                    name="previous_marks"
+                                    min="0"
+                                    max="100"
+                                    step="any"
+                                    placeholder="0 - 100"
+                                    required
+                                >
+                            </div>
+
+
+                            <div class="form-group">
+                                <label>Study Hours Per Day</label>
+
+                                <input
+                                    type="number"
+                                    name="study_hours"
+                                    min="0"
+                                    max="24"
+                                    step="any"
+                                    placeholder="0 - 24"
+                                    required
+                                >
+                            </div>
+
+
+                            <div class="form-group">
+                                <label>Assignment Score (%)</label>
+
+                                <input
+                                    type="number"
+                                    name="assignment_score"
+                                    min="0"
+                                    max="100"
+                                    step="any"
+                                    placeholder="0 - 100"
+                                    required
+                                >
+                            </div>
+
+
+                            <div class="form-group">
+                                <label>Internal Marks (%)</label>
+
+                                <input
+                                    type="number"
+                                    name="internal_marks"
+                                    min="0"
+                                    max="100"
+                                    step="any"
+                                    placeholder="0 - 100"
+                                    required
+                                >
+                            </div>
+
+                        </div>
+
+
+                        <button type="submit" class="primary-btn">
+                            Add Student
+                        </button>
+
+                        <p id="formMessage" class="message"></p>
+
+                    </form>
+
+                </div>
+
+            </section>
+
+
+            <!-- ==================================
+                 STUDENTS PAGE
+            =================================== -->
+
+            <section id="students" class="page">
+
+                <div class="content-card">
+
+                    <div class="card-heading">
+                        <h2>Student Records</h2>
+
+                        <span>Manage all student records</span>
+                    </div>
+
+                    <div class="table-wrapper">
+
+                        <table>
+
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Roll Number</th>
+                                    <th>Attendance</th>
+                                    <th>Predicted Score</th>
+                                    <th>Performance</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="studentTableBody">
+
+                                <tr>
+                                    <td colspan="7">Loading students...</td>
+                                </tr>
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- ==================================
+                 AI PREDICTION PAGE
+            =================================== -->
+
+            <section id="prediction" class="page">
+
+                <div class="content-card">
+
+                    <div class="card-heading">
+                        <h2>AI Study Recommendations</h2>
+
+                        <span>Generate personalized study suggestions</span>
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="studentSelect">
+                            Select Student
+                        </label>
+
+                        <select id="studentSelect">
+
+                            <option value="">
+                                Select a student
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <button id="getFeedbackBtn" class="primary-btn">
+                        Generate AI Recommendations
+                    </button>
+
+
+                    <div id="feedbackResult" class="feedback-result">
+
+                        <p>Select a student to generate recommendations.</p>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- ==================================
+                 ADMIN DASHBOARD PAGE
+            =================================== -->
+
+            <section id="admin" class="page">
+
+                <div class="content-card">
+
+                    <div class="card-heading">
+
+                        <div>
+                            <h2>Admin Dashboard</h2>
+
+                            <span>Administrator overview</span>
+                        </div>
+
+                        <button id="adminRefreshBtn" class="secondary-btn">
+                            ↻ Refresh
+                        </button>
+
+                    </div>
+
+
+                    <div class="stats-grid">
+
+                        <div class="stat-card">
+                            <p>Total Students</p>
+
+                            <h2 id="adminTotalStudents">0</h2>
+                        </div>
+
+
+                        <div class="stat-card">
+                            <p>Good Students</p>
+
+                            <h2 id="adminGoodStudents">0</h2>
+                        </div>
+
+
+                        <div class="stat-card">
+                            <p>Average Students</p>
+
+                            <h2 id="adminAverageStudents">0</h2>
+                        </div>
+
+
+                        <div class="stat-card">
+                            <p>Needs Improvement</p>
+
+                            <h2 id="adminWeakStudents">0</h2>
+                        </div>
+
+                    </div>
+
+
+                    <h3 class="table-title">All Student Records</h3>
+
+
+                    <div class="table-wrapper">
+
+                        <table>
+
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Roll Number</th>
+                                    <th>Score</th>
+                                    <th>Performance</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="adminStudentTable">
+
+                                <tr>
+                                    <td colspan="5">Loading...</td>
+                                </tr>
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+        </main>
+
+    </div>
+
+
+    <script src="app.js"></script>
+
+</body>
+
+</html>
