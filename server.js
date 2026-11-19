@@ -7,6 +7,8 @@ require("dotenv").config();
 
 const express = require("express");
 const path = require("path");
+const fs = require("fs");
+
 const OpenAI = require("openai");
 const bcrypt = require("bcryptjs");
 const session = require("express-session");
@@ -23,11 +25,29 @@ const app = express();
 
 app.use(express.json());
 
+// Render runs behind a proxy.
+app.set("trust proxy", 1);
+
 app.use(express.static(path.join(__dirname, "public")));
 
 
 // ============================================
-// 3. OPENAI CONNECTION
+// 3. DATABASE DIRECTORY
+// ============================================
+
+// Use Render persistent disk when DATA_DIR is configured.
+// Otherwise, use the local database folder.
+
+const DATA_DIR = process.env.DATA_DIR
+    ? path.resolve(process.env.DATA_DIR)
+    : path.join(__dirname, "database");
+
+// Create directory if it does not exist.
+fs.mkdirSync(DATA_DIR, { recursive: true });
+
+
+// ============================================
+// 4. OPENAI CONNECTION
 // ============================================
 
 const ai = process.env.OPENAI_API_KEY
@@ -38,25 +58,28 @@ const ai = process.env.OPENAI_API_KEY
 
 
 // ============================================
-// 4. DATABASE VARIABLE
+// 5. DATABASE VARIABLE
 // ============================================
 
 let db;
 
 
 // ============================================
-// 5. SESSION CONFIGURATION
+// 6. SESSION CONFIGURATION
 // ============================================
 
 if (!process.env.SESSION_SECRET) {
-    throw new Error("SESSION_SECRET is missing from .env");
+    throw new Error("SESSION_SECRET is missing.");
 }
 
 app.use(session({
 
     store: new SQLiteStore({
+
         db: "sessions.sqlite",
-        dir: path.join(__dirname, "database")
+
+        dir: DATA_DIR
+
     }),
 
     secret: process.env.SESSION_SECRET,
@@ -66,21 +89,26 @@ app.use(session({
     saveUninitialized: false,
 
     cookie: {
+
         httpOnly: true,
+
         sameSite: "lax",
+
         secure: process.env.NODE_ENV === "production",
+
         maxAge: 1000 * 60 * 60 * 8
+
     }
+
 }));
 
 
 // ============================================
-// 6. CREATE AND UPDATE ADMIN TABLE
+// 7. CREATE AND UPDATE ADMIN TABLE
 // ============================================
 
 async function setupAdminTable() {
 
-    // Create table if it does not exist.
     await db.exec(`
         CREATE TABLE IF NOT EXISTS admins (
 
@@ -95,10 +123,10 @@ async function setupAdminTable() {
             status TEXT NOT NULL DEFAULT 'approved',
 
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+
         )
     `);
 
-    // Check existing table columns.
     const columns = await db.all(
         "PRAGMA table_info(admins)"
     );
@@ -107,22 +135,22 @@ async function setupAdminTable() {
         column => column.name === "status"
     );
 
-    // Add status column to an older table.
-    // Existing admins will be approved.
     if (!hasStatus) {
 
         await db.exec(`
             ALTER TABLE admins
             ADD COLUMN status TEXT NOT NULL DEFAULT 'approved'
         `);
+
     }
 
     console.log("Admin table is ready!");
+
 }
 
 
 // ============================================
-// 7. ADMIN AUTHENTICATION MIDDLEWARE
+// 8. ADMIN AUTHENTICATION MIDDLEWARE
 // ============================================
 
 async function requireAdmin(req, res, next) {
@@ -130,12 +158,13 @@ async function requireAdmin(req, res, next) {
     try {
 
         if (!req.session.adminId) {
+
             return res.status(401).json({
                 error: "Please login as admin first."
             });
+
         }
 
-        // Verify that this admin still exists and is approved.
         const admin = await db.get(
             `SELECT id, status
              FROM admins
@@ -150,6 +179,7 @@ async function requireAdmin(req, res, next) {
             return res.status(403).json({
                 error: "Your admin account is not approved."
             });
+
         }
 
         next();
@@ -161,12 +191,14 @@ async function requireAdmin(req, res, next) {
         res.status(500).json({
             error: "Unable to verify admin account."
         });
+
     }
+
 }
 
 
 // ============================================
-// 8. CHECK AUTHENTICATION STATUS
+// 9. CHECK AUTHENTICATION STATUS
 // ============================================
 
 app.get("/api/auth/status", async (req, res) => {
@@ -192,12 +224,14 @@ app.get("/api/auth/status", async (req, res) => {
         res.status(500).json({
             error: "Unable to check authentication status."
         });
+
     }
+
 });
 
 
 // ============================================
-// 9. ADMIN REGISTRATION
+// 10. ADMIN REGISTRATION
 // ============================================
 
 app.post("/api/auth/register", async (req, res) => {
@@ -212,31 +246,30 @@ app.post("/api/auth/register", async (req, res) => {
 
         const password = String(req.body.password || "");
 
-        // Check empty fields.
         if (!name || !email || !password) {
 
             return res.status(400).json({
                 error: "All fields are required."
             });
+
         }
 
-        // Validate email.
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
 
             return res.status(400).json({
                 error: "Enter a valid email address."
             });
+
         }
 
-        // Validate password.
         if (password.length < 8) {
 
             return res.status(400).json({
                 error: "Password must contain at least 8 characters."
             });
+
         }
 
-        // Check whether email already exists.
         const existingAdmin = await db.get(
             "SELECT id FROM admins WHERE email = ?",
             [email]
@@ -247,41 +280,31 @@ app.post("/api/auth/register", async (req, res) => {
             return res.status(409).json({
                 error: "This email is already registered. Please login."
             });
+
         }
 
-        // Count existing admins.
         const adminCount = await db.get(
             "SELECT COUNT(*) AS total FROM admins"
         );
 
-        // First admin gets automatic approval.
-        // Other admins need approval.
         const isFirstAdmin = adminCount.total === 0;
 
         const status = isFirstAdmin
             ? "approved"
             : "pending";
 
-        // Hash password.
         const hashedPassword = await bcrypt.hash(
             password,
             12
         );
 
-        // Save new admin.
         const result = await db.run(
             `INSERT INTO admins
             (name, email, password, status)
             VALUES (?, ?, ?, ?)`,
-            [
-                name,
-                email,
-                hashedPassword,
-                status
-            ]
+            [name, email, hashedPassword, status]
         );
 
-        // Additional admins must wait for approval.
         if (status === "pending") {
 
             return res.status(201).json({
@@ -296,9 +319,9 @@ app.post("/api/auth/register", async (req, res) => {
                 }
 
             });
+
         }
 
-        // Automatically login the first admin.
         req.session.regenerate((error) => {
 
             if (error) {
@@ -308,6 +331,7 @@ app.post("/api/auth/register", async (req, res) => {
                 return res.status(500).json({
                     error: "Registration succeeded, but login failed. Please login."
                 });
+
             }
 
             req.session.adminId = result.lastID;
@@ -321,6 +345,7 @@ app.post("/api/auth/register", async (req, res) => {
                     return res.status(500).json({
                         error: "Unable to create login session. Please login."
                     });
+
                 }
 
                 res.status(201).json({
@@ -335,7 +360,9 @@ app.post("/api/auth/register", async (req, res) => {
                     }
 
                 });
+
             });
+
         });
 
     } catch (error) {
@@ -347,17 +374,20 @@ app.post("/api/auth/register", async (req, res) => {
             return res.status(409).json({
                 error: "This email is already registered."
             });
+
         }
 
         res.status(500).json({
             error: "Unable to register admin."
         });
+
     }
+
 });
 
 
 // ============================================
-// 10. ADMIN LOGIN
+// 11. ADMIN LOGIN
 // ============================================
 
 app.post("/api/auth/login", async (req, res) => {
@@ -375,9 +405,9 @@ app.post("/api/auth/login", async (req, res) => {
             return res.status(400).json({
                 error: "Email and password are required."
             });
+
         }
 
-        // Find admin.
         const admin = await db.get(
             "SELECT * FROM admins WHERE email = ?",
             [email]
@@ -388,9 +418,9 @@ app.post("/api/auth/login", async (req, res) => {
             return res.status(401).json({
                 error: "Invalid email or password."
             });
+
         }
 
-        // Check password.
         const passwordMatch = await bcrypt.compare(
             password,
             admin.password
@@ -401,14 +431,15 @@ app.post("/api/auth/login", async (req, res) => {
             return res.status(401).json({
                 error: "Invalid email or password."
             });
+
         }
 
-        // Check approval status.
         if (admin.status === "pending") {
 
             return res.status(403).json({
                 error: "Your account is waiting for admin approval."
             });
+
         }
 
         if (admin.status === "rejected") {
@@ -416,9 +447,9 @@ app.post("/api/auth/login", async (req, res) => {
             return res.status(403).json({
                 error: "Your admin registration was rejected."
             });
+
         }
 
-        // Create a fresh session.
         req.session.regenerate((error) => {
 
             if (error) {
@@ -428,6 +459,7 @@ app.post("/api/auth/login", async (req, res) => {
                 return res.status(500).json({
                     error: "Unable to login."
                 });
+
             }
 
             req.session.adminId = admin.id;
@@ -441,6 +473,7 @@ app.post("/api/auth/login", async (req, res) => {
                     return res.status(500).json({
                         error: "Unable to save login session."
                     });
+
                 }
 
                 res.json({
@@ -455,7 +488,9 @@ app.post("/api/auth/login", async (req, res) => {
                     }
 
                 });
+
             });
+
         });
 
     } catch (error) {
@@ -465,12 +500,14 @@ app.post("/api/auth/login", async (req, res) => {
         res.status(500).json({
             error: "Unable to login."
         });
+
     }
+
 });
 
 
 // ============================================
-// 11. GET CURRENT ADMIN
+// 12. GET CURRENT ADMIN
 // ============================================
 
 app.get("/api/auth/me", requireAdmin, async (req, res) => {
@@ -489,6 +526,7 @@ app.get("/api/auth/me", requireAdmin, async (req, res) => {
             return res.status(401).json({
                 error: "Admin account not found."
             });
+
         }
 
         res.json({ admin });
@@ -500,12 +538,14 @@ app.get("/api/auth/me", requireAdmin, async (req, res) => {
         res.status(500).json({
             error: "Unable to get admin information."
         });
+
     }
+
 });
 
 
 // ============================================
-// 12. GET PENDING ADMIN REQUESTS
+// 13. GET PENDING ADMIN REQUESTS
 // ============================================
 
 app.get("/api/admin/requests", requireAdmin, async (req, res) => {
@@ -528,12 +568,14 @@ app.get("/api/admin/requests", requireAdmin, async (req, res) => {
         res.status(500).json({
             error: "Unable to get admin requests."
         });
+
     }
+
 });
 
 
 // ============================================
-// 13. APPROVE OR REJECT ADMIN REQUEST
+// 14. APPROVE OR REJECT ADMIN REQUEST
 // ============================================
 
 app.patch("/api/admin/requests/:id", requireAdmin, async (req, res) => {
@@ -549,6 +591,7 @@ app.patch("/api/admin/requests/:id", requireAdmin, async (req, res) => {
             return res.status(400).json({
                 error: "Invalid admin ID."
             });
+
         }
 
         if (!["approved", "rejected"].includes(status)) {
@@ -556,14 +599,15 @@ app.patch("/api/admin/requests/:id", requireAdmin, async (req, res) => {
             return res.status(400).json({
                 error: "Status must be approved or rejected."
             });
+
         }
 
-        // Prevent changing your own account.
         if (id === req.session.adminId) {
 
             return res.status(400).json({
                 error: "You cannot change your own account status."
             });
+
         }
 
         const result = await db.run(
@@ -578,6 +622,7 @@ app.patch("/api/admin/requests/:id", requireAdmin, async (req, res) => {
             return res.status(404).json({
                 error: "Pending admin request not found."
             });
+
         }
 
         res.json({
@@ -593,12 +638,14 @@ app.patch("/api/admin/requests/:id", requireAdmin, async (req, res) => {
         res.status(500).json({
             error: "Unable to update admin request."
         });
+
     }
+
 });
 
 
 // ============================================
-// 14. ADMIN LOGOUT
+// 15. ADMIN LOGOUT
 // ============================================
 
 app.post("/api/auth/logout", (req, res) => {
@@ -612,6 +659,7 @@ app.post("/api/auth/logout", (req, res) => {
             return res.status(500).json({
                 error: "Unable to logout."
             });
+
         }
 
         res.clearCookie("connect.sid");
@@ -619,12 +667,14 @@ app.post("/api/auth/logout", (req, res) => {
         res.json({
             message: "Logged out successfully!"
         });
+
     });
+
 });
 
 
 // ============================================
-// 15. VALIDATE STUDENT DETAILS
+// 16. VALIDATE STUDENT DETAILS
 // ============================================
 
 function validateStudent(data) {
@@ -648,6 +698,7 @@ function validateStudent(data) {
         return {
             error: "Name and roll number are required."
         };
+
     }
 
     if (
@@ -661,6 +712,7 @@ function validateStudent(data) {
         return {
             error: "Please enter valid numbers."
         };
+
     }
 
     if (
@@ -674,6 +726,7 @@ function validateStudent(data) {
         return {
             error: "Marks and attendance must be 0-100. Study hours must be 0-24."
         };
+
     }
 
     return {
@@ -689,11 +742,12 @@ function validateStudent(data) {
         }
 
     };
+
 }
 
 
 // ============================================
-// 16. PREDICT STUDENT PERFORMANCE
+// 17. PREDICT STUDENT PERFORMANCE
 // ============================================
 
 function predictPerformance(student) {
@@ -725,17 +779,19 @@ function predictPerformance(student) {
     } else {
 
         performance = "Needs Improvement";
+
     }
 
     return {
         predicted_score,
         performance
     };
+
 }
 
 
 // ============================================
-// 17. GET ALL STUDENTS
+// 18. GET ALL STUDENTS
 // ============================================
 
 app.get("/api/students", requireAdmin, async (req, res) => {
@@ -755,12 +811,14 @@ app.get("/api/students", requireAdmin, async (req, res) => {
         res.status(500).json({
             error: "Unable to get students."
         });
+
     }
+
 });
 
 
 // ============================================
-// 18. ADD NEW STUDENT
+// 19. ADD NEW STUDENT
 // ============================================
 
 app.post("/api/students", requireAdmin, async (req, res) => {
@@ -774,6 +832,7 @@ app.post("/api/students", requireAdmin, async (req, res) => {
             return res.status(400).json({
                 error: result.error
             });
+
         }
 
         const student = result.student;
@@ -829,17 +888,20 @@ app.post("/api/students", requireAdmin, async (req, res) => {
             return res.status(409).json({
                 error: "This roll number already exists."
             });
+
         }
 
         res.status(500).json({
             error: "Unable to add student."
         });
+
     }
+
 });
 
 
 // ============================================
-// 19. DELETE STUDENT
+// 20. DELETE STUDENT
 // ============================================
 
 app.delete("/api/students/:id", requireAdmin, async (req, res) => {
@@ -853,6 +915,7 @@ app.delete("/api/students/:id", requireAdmin, async (req, res) => {
             return res.status(400).json({
                 error: "Invalid student ID."
             });
+
         }
 
         const result = await db.run(
@@ -865,6 +928,7 @@ app.delete("/api/students/:id", requireAdmin, async (req, res) => {
             return res.status(404).json({
                 error: "Student not found."
             });
+
         }
 
         res.json({
@@ -878,12 +942,14 @@ app.delete("/api/students/:id", requireAdmin, async (req, res) => {
         res.status(500).json({
             error: "Unable to delete student."
         });
+
     }
+
 });
 
 
 // ============================================
-// 20. GENERATE AI RECOMMENDATIONS
+// 21. GENERATE AI RECOMMENDATIONS
 // ============================================
 
 app.post("/api/ai-feedback/:id", requireAdmin, async (req, res) => {
@@ -895,13 +961,15 @@ app.post("/api/ai-feedback/:id", requireAdmin, async (req, res) => {
             return res.status(503).json({
                 error: "OpenAI API key is not configured."
             });
+
         }
 
         if (!process.env.OPENAI_MODEL) {
 
             return res.status(503).json({
-                error: "Please set OPENAI_MODEL in your .env file."
+                error: "Please set OPENAI_MODEL."
             });
+
         }
 
         const id = Number(req.params.id);
@@ -911,6 +979,7 @@ app.post("/api/ai-feedback/:id", requireAdmin, async (req, res) => {
             return res.status(400).json({
                 error: "Invalid student ID."
             });
+
         }
 
         const student = await db.get(
@@ -923,6 +992,7 @@ app.post("/api/ai-feedback/:id", requireAdmin, async (req, res) => {
             return res.status(404).json({
                 error: "Student not found."
             });
+
         }
 
         const response = await ai.responses.create({
@@ -948,6 +1018,7 @@ Give:
 1. A short performance summary.
 2. Three practical improvement tips.
 3. A simple weekly study suggestion.`
+
         });
 
         res.json({
@@ -968,40 +1039,51 @@ Give:
             return res.status(503).json({
                 error: "OpenAI API credits are unavailable. Check your API billing."
             });
+
         }
 
         res.status(500).json({
             error: "Unable to generate AI recommendations."
         });
+
     }
+
 });
 
 
 // ============================================
-// 21. START SERVER
+// 22. HEALTH CHECK
+// ============================================
+
+app.get("/healthz", (req, res) => {
+
+    res.status(200).send("OK");
+
+});
+
+
+// ============================================
+// 23. START SERVER
 // ============================================
 
 async function startServer() {
 
     try {
 
-        // Connect database.
         db = await connectDB();
 
-        // Create or update admin table.
         await setupAdminTable();
 
         const PORT = process.env.PORT || 3000;
 
-        app.listen(PORT, () => {
+        app.listen(PORT, "0.0.0.0", () => {
 
             console.log("--------------------------------");
 
-            console.log(
-                `EduPredict AI is running at http://localhost:${PORT}`
-            );
+            console.log(`EduPredict AI is running on port ${PORT}`);
 
             console.log("--------------------------------");
+
         });
 
     } catch (error) {
@@ -1009,7 +1091,9 @@ async function startServer() {
         console.error("Server could not start:", error);
 
         process.exit(1);
+
     }
+
 }
 
 startServer();
